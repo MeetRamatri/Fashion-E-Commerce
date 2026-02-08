@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const productRouter = require('./Routers/product.router');
+const cartRouter = require('./Routers/cart.router');
 
 const app = express();
 
@@ -10,6 +11,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/products', productRouter);
+app.use('/api/cart', cartRouter);
 
 // Health Check Route
 app.get('/api/health', (req, res) => {

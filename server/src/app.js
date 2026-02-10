@@ -5,6 +5,7 @@ const cartRouter = require('./Routers/cart.router');
 const orderRouter = require('./Routers/order.router');
 const productVariantRouter = require('./Routers/productVariant.router');
 const addressRouter = require('./Routers/address.router');
+const paymentRouter = require('./Routers/payment.router');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/product-variants', productVariantRouter);
 app.use('/api/addresses', addressRouter);
+app.use('/api/payments', paymentRouter);
 
 // Health Check Route
 app.get('/api/health', (req, res) => {

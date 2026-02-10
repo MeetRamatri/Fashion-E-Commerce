@@ -6,6 +6,7 @@ const orderRouter = require('./Routers/order.router');
 const productVariantRouter = require('./Routers/productVariant.router');
 const addressRouter = require('./Routers/address.router');
 const paymentRouter = require('./Routers/payment.router');
+const authRouter = require('./Routers/auth.router');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use('/api/orders', orderRouter);
 app.use('/api/product-variants', productVariantRouter);
 app.use('/api/addresses', addressRouter);
 app.use('/api/payments', paymentRouter);
+app.use('/api/auth', authRouter);
 
 // Health Check Route
 app.get('/api/health', (req, res) => {

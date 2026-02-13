@@ -10,6 +10,8 @@
     "lint": "echo 'No linter configured yet'"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.3.0",
+    "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

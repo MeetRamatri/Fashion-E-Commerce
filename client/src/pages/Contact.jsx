@@ -4,10 +4,40 @@ import Footer from '../components/Footer';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 
 const Contact = () => {
-  const handleSubmit = (e) => {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+  const [status, setStatus] = React.useState('idle'); // idle, submitting, success, error
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log('Form submitted');
+    setStatus('submitting');
+    try {
+      const response = await fetch('http://localhost:5001/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        setStatus('error');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setStatus('error');
+    }
   };
 
   return (
@@ -81,6 +111,9 @@ const Contact = () => {
                     <input 
                       type="text" 
                       id="name" 
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-black focus:border-black transition duration-300"
                       placeholder="John Doe"
                       required
@@ -92,6 +125,9 @@ const Contact = () => {
                     <input 
                       type="email" 
                       id="email" 
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-black focus:border-black transition duration-300"
                       placeholder="john@example.com"
                       required
@@ -103,6 +139,9 @@ const Contact = () => {
                     <input 
                       type="text" 
                       id="subject" 
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-black focus:border-black transition duration-300"
                       placeholder="How can we help?"
                       required
@@ -113,6 +152,9 @@ const Contact = () => {
                     <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
                     <textarea 
                       id="message" 
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
                       rows="4" 
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-black focus:border-black transition duration-300"
                       placeholder="Your message here..."
@@ -122,11 +164,19 @@ const Contact = () => {
 
                   <button 
                     type="submit" 
-                    className="w-full bg-black text-white font-bold py-3 px-6 rounded-md hover:bg-gray-800 transition duration-300 flex items-center justify-center space-x-2"
+                    disabled={status === 'submitting'}
+                    className="w-full bg-black text-white font-bold py-3 px-6 rounded-md hover:bg-gray-800 transition duration-300 flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    <span>Send Message</span>
+                    <span>{status === 'submitting' ? 'Sending...' : 'Send Message'}</span>
                     <Send className="w-4 h-4" />
                   </button>
+                  
+                  {status === 'success' && (
+                    <p className="text-green-600 text-center font-medium">Message sent successfully!</p>
+                  )}
+                  {status === 'error' && (
+                    <p className="text-red-600 text-center font-medium">Failed to send message. Please try again.</p>
+                  )}
                 </form>
               </div>
 

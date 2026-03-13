@@ -1,13 +1,50 @@
 const Cart = require('../models/Cart');
+const Product = require('../models/Product');
+
+// Helper to get cart with populated product details
+const getCartWithProducts = async (userId) => {
+    const cart = await Cart.findOne({ user_id: userId });
+    if (!cart) return { user_id: userId, items: [] };
+
+    // Populate product info for each item
+    const populatedItems = await Promise.all(
+        cart.items.map(async (item) => {
+            const product = await Product.findOne({ id: item.product_id });
+            return {
+                product_id: item.product_id,
+                quantity: item.quantity,
+                product: product
+                    ? {
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          discount_price: product.discount_price,
+                          images: product.images,
+                          brand: product.brand,
+                          category: product.category
+                      }
+                    : null
+            };
+        })
+    );
+
+    return {
+        _id: cart._id,
+        user_id: cart.user_id,
+        items: populatedItems,
+        updatedAt: cart.updatedAt
+    };
+};
 
 const getCart = async (userId) => {
     try {
+        // Ensure cart exists
         let cart = await Cart.findOne({ user_id: userId });
         if (!cart) {
             cart = new Cart({ user_id: userId, items: [] });
             await cart.save();
         }
-        return cart;
+        return await getCartWithProducts(userId);
     } catch (error) {
         throw error;
     }
@@ -20,34 +57,31 @@ const addToCart = async (userId, item) => {
             cart = new Cart({ user_id: userId, items: [] });
         }
 
-        const { product_variant_id, quantity } = item;
-        const existingItemIndex = cart.items.findIndex(
-            (i) => i.product_variant_id.toString() === product_variant_id
+        const { product_id, quantity = 1 } = item;
+
+        const existingIndex = cart.items.findIndex(
+            (i) => i.product_id === product_id
         );
 
-        if (existingItemIndex > -1) {
-            cart.items[existingItemIndex].quantity += quantity;
+        if (existingIndex > -1) {
+            cart.items[existingIndex].quantity += quantity;
         } else {
-            cart.items.push({ product_variant_id, quantity });
+            cart.items.push({ product_id, quantity });
         }
 
         await cart.save();
-        return await getCart(userId);
+        return await getCartWithProducts(userId);
     } catch (error) {
         throw error;
     }
 };
 
-const updateItemQuantity = async (userId, variantId, quantity) => {
+const updateItemQuantity = async (userId, productId, quantity) => {
     try {
         const cart = await Cart.findOne({ user_id: userId });
-        if (!cart) {
-            throw new Error('Cart not found');
-        }
+        if (!cart) throw new Error('Cart not found');
 
-        const itemIndex = cart.items.findIndex(
-            (i) => i.product_variant_id.toString() === variantId
-        );
+        const itemIndex = cart.items.findIndex((i) => i.product_id === productId);
 
         if (itemIndex > -1) {
             if (quantity > 0) {
@@ -56,7 +90,7 @@ const updateItemQuantity = async (userId, variantId, quantity) => {
                 cart.items.splice(itemIndex, 1);
             }
             await cart.save();
-            return await getCart(userId);
+            return await getCartWithProducts(userId);
         } else {
             throw new Error('Item not found in cart');
         }
@@ -65,19 +99,14 @@ const updateItemQuantity = async (userId, variantId, quantity) => {
     }
 };
 
-const removeItem = async (userId, variantId) => {
+const removeItem = async (userId, productId) => {
     try {
         const cart = await Cart.findOne({ user_id: userId });
-        if (!cart) {
-            throw new Error('Cart not found');
-        }
+        if (!cart) throw new Error('Cart not found');
 
-        cart.items = cart.items.filter(
-            (i) => i.product_variant_id.toString() !== variantId
-        );
-
+        cart.items = cart.items.filter((i) => i.product_id !== productId);
         await cart.save();
-        return await getCart(userId);
+        return await getCartWithProducts(userId);
     } catch (error) {
         throw error;
     }
@@ -90,7 +119,7 @@ const clearCart = async (userId) => {
             cart.items = [];
             await cart.save();
         }
-        return cart;
+        return await getCartWithProducts(userId);
     } catch (error) {
         throw error;
     }

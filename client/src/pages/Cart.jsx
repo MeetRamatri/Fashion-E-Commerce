@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext';
 
 const Cart = () => {
   const { cartItems, cartTotal, cartCount, updateQty, removeFromCart, clearCart } = useCart();
+  const navigate = useNavigate();
 
   if (cartItems.length === 0) {
     return (
@@ -157,7 +158,10 @@ const Cart = () => {
                   </div>
                 </div>
 
-                <button className="w-full bg-indigo-600 text-white py-3.5 px-6 rounded-xl font-semibold text-base hover:bg-indigo-700 active:scale-95 transition-all duration-200 shadow-md shadow-indigo-200">
+                <button
+                  onClick={() => navigate('/checkout')}
+                  className="w-full bg-indigo-600 text-white py-3.5 px-6 rounded-xl font-semibold text-base hover:bg-indigo-700 active:scale-95 transition-all duration-200 shadow-md shadow-indigo-200 flex items-center justify-center gap-2"
+                >
                   Proceed to Checkout
                 </button>
 

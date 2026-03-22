@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  backend:
+    build: ./server
+    container_name: shopsmart-backend
+    ports:
+      - "5001:5001"
+    environment:
+      - NODE_ENV=development
+      - PORT=5001
+      - MONGO_URI=mongodb://database:27017/shopsmart
+    depends_on:
+      - database
+  database:
+    build: ./database
+    container_name: shopsmart-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+  client:
+    build: ./client
+    container_name: shopsmart-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+volumes:
+  mongo_data:
